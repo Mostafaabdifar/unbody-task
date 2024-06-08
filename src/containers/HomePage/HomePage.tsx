@@ -15,6 +15,7 @@ export const HomePage: React.FC<HomePageProps> = ({ className, ...props }) => {
   const [selectedFiles, setSelectedFiles] = useState<string[]>([])
   const [messages, setMessages] = useState<ApiChatMessage[]>([])
   const [generating, setGenerating] = useState(false)
+  const [lastChatMessage, setLastChatMessage] = useState<string>('')
 
   const search = useSearch(
     { query },
@@ -38,23 +39,44 @@ export const HomePage: React.FC<HomePageProps> = ({ className, ...props }) => {
   const onPrompt = async (prompt: string) => {
     setGenerating(true)
 
-    setMessages((value) => [
-      ...value,
-      {
-        role: 'user',
-        message: prompt,
-      },
-    ])
+    const userMessage: ApiChatMessage = {
+      role: 'user',
+      message: prompt,
+    }
+
+    const updatedMessages = [...messages, userMessage]
+    setMessages(updatedMessages)
 
     const { message } = await chatApi({
       prompt,
       files: fileList.filter((f) => selectedFiles.includes(f.id)),
-      history: messages,
+      history: updatedMessages,
     })
 
     setGenerating(false)
-    setMessages((value) => [...value, message])
+    setMessages((prevMessages) => [...prevMessages, message])
     setPrompt('')
+    setLastChatMessage(prompt)
+  }
+
+  const handleEdit = () => {
+    console.log('Editing message')
+  }
+
+  const handleSave = (messageId: string, editedMessage: string) => {
+    console.log(`Saving message ${messageId}: ${editedMessage}`)
+    const updatedMessages = messages.map((msg) =>
+      msg.message === messageId ? { ...msg, message: editedMessage } : msg,
+    )
+    setMessages(updatedMessages)
+  }
+
+  const handleStartNewChat = (editedMessage?: string) => {
+    if (editedMessage) {
+      onPrompt(editedMessage)
+    } else {
+      onPrompt(lastChatMessage)
+    }
   }
 
   useEffect(() => {
@@ -90,10 +112,14 @@ export const HomePage: React.FC<HomePageProps> = ({ className, ...props }) => {
       />
       <ChatMessages
         className="py-[20px]"
-        data={messages.map((msg) => ({
+        data={messages.map((msg, index) => ({
+          messageId: `msg-${index}`,
           role: msg.role,
           message: msg.message,
         }))}
+        onEdit={handleEdit}
+        onSave={handleSave}
+        onStartNewChat={handleStartNewChat}
       />
     </ChatLayout>
   )

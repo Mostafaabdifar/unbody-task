@@ -57,7 +57,13 @@ export const Search: React.FC<SearchProps> = ({
           onSearch && onSearch(query || '')
         }}
       />
-      <div className="mb-4 mx-auto">
+      <div
+        className={clsx(
+          'mb-4',
+          'mx-auto',
+          compact && ['opacity-0', 'invisible', 'h-0', 'mb-0'],
+        )}
+      >
         {fileTypes.map((type) => (
           <Checkbox
             className="mx-3"
