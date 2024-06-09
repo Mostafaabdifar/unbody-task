@@ -1,10 +1,4 @@
-import {
-  Accordion,
-  AccordionItem,
-  AccordionItemProps,
-  AccordionProps,
-  Chip,
-} from '@nextui-org/react'
+import { Chip } from '@nextui-org/react'
 import React from 'react'
 
 export type FileCardProps = {
@@ -13,9 +7,8 @@ export type FileCardProps = {
   icon: React.ReactNode
   excerpt?: string
   tags?: string[]
-
-  itemProps?: Partial<AccordionItemProps>
-} & Partial<AccordionProps>
+  startContent?: React.ReactNode
+}
 
 export const FileCard: React.FC<FileCardProps> = ({
   name,
@@ -23,8 +16,7 @@ export const FileCard: React.FC<FileCardProps> = ({
   icon,
   tags,
   excerpt,
-  itemProps = {},
-  ...props
+  startContent,
 }) => {
   const displayName =
     !!extension && name.endsWith(extension)
@@ -35,51 +27,31 @@ export const FileCard: React.FC<FileCardProps> = ({
       {extension}
     </Chip>
   ) : null
-  const title = (
-    <>
-      {displayName}
-      {extensionChip}
-    </>
-  )
-
-  const iconComponent = (
-    <div className="w-6 h-6 flex items-center justify-center fill-primary-500">
-      {icon}
-    </div>
-  )
-
-  const startContent = (
-    <div className="flex flex-row items-center">
-      {itemProps.startContent}
-      {iconComponent}
-    </div>
-  )
-
-  const subtitle = (
-    <div className="flex flex-row items-center justify-between">
-      <div className="w-0 flex-grow pe-8 whitespace-nowrap overflow-hidden overflow-ellipsis">
-        {excerpt || displayName}
-      </div>
-      <div className="flex flex-row gap-1">
-        {(tags || []).slice(0, 2).map((tag, index) => (
-          <Chip key={index} size="sm" radius="full">
-            {tag}
-          </Chip>
-        ))}
-      </div>
-    </div>
-  )
 
   return (
-    <Accordion selectedKeys={[]} isCompact {...props}>
-      <AccordionItem
-        disableAnimation
-        hideIndicator
-        title={title}
-        subtitle={subtitle}
-        {...itemProps}
-        startContent={startContent}
-      ></AccordionItem>
-    </Accordion>
+    <div className="flex flex-row items-center">
+      {startContent}
+      <div className="w-6 h-6 flex items-center justify-center fill-primary-500">
+        {icon}
+      </div>
+      <div className="flex-grow">
+        <div className="flex items-center">
+          <span className="font-medium">{displayName}</span>
+          {extensionChip}
+        </div>
+        <div className="flex justify-between">
+          <span className="text-sm text-gray-500">
+            {excerpt || displayName}
+          </span>
+          <div className="flex gap-1">
+            {(tags || []).slice(0, 2).map((tag, index) => (
+              <Chip key={index} size="sm" radius="full">
+                {tag}
+              </Chip>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
   )
 }

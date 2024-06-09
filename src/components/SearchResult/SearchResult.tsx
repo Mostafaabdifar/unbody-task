@@ -98,6 +98,14 @@ export const SearchResult: React.FC<SearchResultProps> = ({
     }
   }
 
+  const getPreviewUrl = (item: FileData) => {
+    if (item.path && item.path.length > 0) {
+      return item.path.join('/')
+    }
+
+    return `/images/${item.metadata.id}${item.extension}`
+  }
+
   return (
     <div className={clsx('relative', className)} {...props}>
       <div>
@@ -130,46 +138,18 @@ export const SearchResult: React.FC<SearchResultProps> = ({
             HeadingComponent={() => <></>}
           >
             <div className={clsx('max-h-[500px] overflow-y-auto')}>
-              {directoriesGroup.map((item, index) => (
-                <div key={index}>
-                  <div className={clsx('flex flex-row items-center')}>
-                    <FolderCard
-                      name={item.name}
-                      label={[
-                        'Folder',
-                        `${(item.children || []).length} items`,
-                      ]}
-                      selectedKeys={[]}
-                      itemProps={{
-                        onPress: () => onCheckboxChange(item.id),
-                        startContent: (
-                          <>
-                            <Checkbox
-                              className="pe-[16px]"
-                              isSelected={isItemSelected(item.id)}
-                              onValueChange={() => onCheckboxChange(item.id)}
-                            />
-                          </>
-                        ),
-                        hideIndicator: true,
-                      }}
-                    />
-                  </div>
-                </div>
-              ))}
-
-              <Divider className="my-2" />
-
-              {filesGroup.map((item, index) => {
-                const IconComponent = iconMap[item.type]
-
-                return (
-                  <div key={index}>
-                    <div className={clsx('flex flex-row items-center')}>
-                      <FileCard
+              {directoriesGroup.map((item) => (
+                <Accordion key={item.id}>
+                  <AccordionItem
+                    key={item.id}
+                    title={
+                      <FolderCard
                         name={item.name}
-                        tags={item.tags}
-                        excerpt={item.excerpt}
+                        label={[
+                          'Folder',
+                          `${(item.children || []).length} items`,
+                        ]}
+                        selectedKeys={[]}
                         itemProps={{
                           onPress: () => onCheckboxChange(item.id),
                           startContent: (
@@ -181,12 +161,58 @@ export const SearchResult: React.FC<SearchResultProps> = ({
                               />
                             </>
                           ),
+                          hideIndicator: true,
                         }}
-                        icon={<IconComponent />}
-                        extension={item.extension || ''}
                       />
-                    </div>
-                  </div>
+                    }
+                  ></AccordionItem>
+                </Accordion>
+              ))}
+
+              <Divider className="my-2" />
+
+              {filesGroup.map((item) => {
+                const IconComponent = iconMap[item.type]
+                const previewUrl = getPreviewUrl(item)
+                return (
+                  <Accordion key={item.id}>
+                    <AccordionItem
+                      key={item.id}
+                      title={
+                        <FileCard
+                          name={item.name}
+                          tags={item.tags}
+                          excerpt={item.excerpt}
+                          startContent={
+                            <>
+                              <Checkbox
+                                className="pe-[16px]"
+                                isSelected={isItemSelected(item.id)}
+                                onValueChange={() => onCheckboxChange(item.id)}
+                              />
+                            </>
+                          }
+                          icon={<IconComponent />}
+                          extension={item.extension || ''}
+                        />
+                      }
+                    >
+                      <div className="p-4">
+                        <div className="p-4">
+                          {item.type === 'image' && previewUrl ? (
+                            <img
+                              src={previewUrl}
+                              alt={item.name}
+                              className="mb-4"
+                            />
+                          ) : (
+                            <p>{item.metadata.__typename}</p>
+                          )}
+                          <p>{item.excerpt}</p>
+                        </div>
+                      </div>
+                    </AccordionItem>
+                  </Accordion>
                 )
               })}
             </div>
